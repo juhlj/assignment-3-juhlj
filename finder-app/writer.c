@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
 		}
 
 	syslog(LOG_DEBUG, "Writing %s to %s", str, file);
+
 	len = strlen(str); //length of string to write to file
 	err = write(fd, str, len);
 		if (err < 0 || err != len) {
