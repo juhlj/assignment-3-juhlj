@@ -86,34 +86,38 @@ bool do_exec(int count, ...)
 */
 bool do_exec_redirect(const char *outputfile, int count, ...)
 {
+
 	va_list args;
 	va_start(args, count);
 	char * command[count+1];
-	int i, fd, ret, dups[2];
+	int i, fd, ret, status;
 	pid_t pid;
+	fflush(stdout);
 		for(i=0; i<count; i++)
 		{
 		command[i] = va_arg(args, char *);
 		}
-	fd = open(outputfile, O_CREAT | O_WRONLY | O_APPEND, 0644); //read for others, write for owner
+	fd = open(outputfile, O_CREAT | O_WRONLY | O_TRUNC, 0644); //read for others, write for owner
 		if (fd < 0) {
 			printf("open: %s\n", strerror(errno));
 		}
 	command[count] = NULL;
 	// this line is to avoid a compile warning before your implementation is complete
 	// and may be removed
-	for (i = 0;i < 2;i++) {
-		dups[i] = dup2(fd, i + 1);
-			if (dups[i] < 0) {
-				printf("dup2 %s\n", strerror(errno));
-			}
-	}
+
+
+
 
 	pid = fork();
 		if (pid < 0) {
 			printf("fork %s\n", strerror(errno));
 		}
+
 		if (pid == 0) {
+
+		if (dup2(fd, 1) < 0) {
+			printf("dup2 %s\n", strerror(errno));		
+		}
 			ret = execv(command[0], command);
 				if (ret < 0) {
 					printf("execv %s\n", strerror(errno));
@@ -127,9 +131,11 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 	*   The rest of the behaviour is same as do_exec()
 	*
 	*/
-	
+		if (waitpid(pid, &status, 0) < 0) {
+			printf("wait returned %s\n", strerror(errno));
+		}
 	va_end(args);
 	close(fd);
-	return true;
+	return WEXITSTATUS(status) ? false : true;
 }
 
