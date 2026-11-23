@@ -168,10 +168,12 @@ sudo mknod -m 666 $OUTDIR/rootfs/dev/null c 1 3
 sudo mknod -m 600 $OUTDIR/rootfs/dev/console c 5 1
 # TODO: Clean and build the writer utility
 cd $FINDER_APP_DIR && make clean
-make CROSS_COMPILER=aarch64-none-linux-gnu-
+make CROSS_COMPILE=aarch64-none-linux-gnu-
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
-cp writer finder.sh $OUTDIR/rootfs/home/
+cp autorun-qemu.sh writer finder.sh finder-test.sh $OUTDIR/rootfs/home/
+mkdir $OUTDIR/rootfs/home/conf/
+cp conf/assignment.txt conf/username.txt $OUTDIR/rootfs/home/conf/
 # TODO: Chown the root directory
 sudo chown root $OUTDIR/rootfs/ 
 # TODO: Create initramfs.cpio.gz
@@ -182,3 +184,4 @@ if [ ! -f ${OUTDIR}/initramfs.cpio ]  ; then
 fi
 cd ..
 gzip -f initramfs.cpio
+
